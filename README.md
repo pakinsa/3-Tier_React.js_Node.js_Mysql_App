@@ -137,6 +137,7 @@ but we had to change it from `book` to `books` and `author` to `authors` in the 
 
 ### 7. We git push origin branch added as a new pull request on this github with a new branch before the next steps were taken
 
+![alt text](img/13.deploy_branch.png)
 
 
 Remember if you have the same .env variables in code and also in user data then the userdata is superior. This ensures the "local" secrets never even make it into the ZIP file or GitHub. 
