@@ -12,6 +12,11 @@ dist
 dist-ssr
 *.local
 
+# Ignore the build zip files
+frontend-build.zip
+backend-build.zip
+
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -23,3 +28,4 @@ dist-ssr
 *.sln
 *.sw?
 .env
+

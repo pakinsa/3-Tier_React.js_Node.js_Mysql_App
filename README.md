@@ -2,7 +2,7 @@
 This project is a full-stack web application built using React js for the frontend, Express js for the backend, and MySQL as the database. The application is designed to demonstrate the implementation of a 3-tier architecture, where the presentation layer (React js), application logic layer (Express js), and data layer (MySQL) are separated into distinct tiers.
 
 
-## User Interface Screenshots 
+## User Interface Screenshots & Expected Result
 #### Dashboard
 ![Dashboard](./frontend/public/ss/dashboard.png)
 
@@ -12,6 +12,9 @@ This project is a full-stack web application built using React js for the fronte
 #### Authors
 ![Dashboard](./frontend/public/ss/authors.png)
 
+
+
+# Our Deployment
 
 ## React + Node.js + MySQL Deployment Guide (AWS)
 
@@ -23,7 +26,7 @@ This project is a full-stack web application built using React js for the fronte
 
 ![alt text](img/00.git_clone.png)
 
-### 1. We created a file named .env in your frontend/ and updat it with:
+### 1. We created a file named .env in the frontend/ and updated it with:
 
 `frontend/.env`
 ##### Use your Backend EC2 Public IP or APP ALB DNS here
@@ -67,9 +70,8 @@ module.exports = db;
 ```
 ![alt text](img/04.db_js_b4.png)
 
-TO THIS:
 
-Update your db.js (The Final Link)
+TO THIS:
 To make the Backend actually read these variables, we need to install the dotenv package (```npm install dotenv```) and update your configs/db.js like this:
 
 ```bash
@@ -93,14 +95,14 @@ module.exports = db;
 ![alt text](img/06.db_js_after.png)
 
 
-### 4. We put .env in our .gitignore file for both frontend and backend. 
+### 4. We inserted respective values of our env files for both frontend and backend and put .env in our .gitignore for both frontend & backend
 
 ![alt text](img/07.env_add_git_ignore_frontend.png)
 
 ![alt text](img/08.env_add_git_ignore_backend.png)
 
 
-### 5. In server.js, we have:
+### 5. In server.js from developer where we have:
 
 ```bash
 const app = require('./app');
@@ -113,7 +115,9 @@ app.listen(port, () => {
 
 ![alt text](img/09.server.js_b4.png)
 
-But we have to change it to:
+
+We have to change it to:
+
 
 ```bash
 const app = require('./app');
@@ -127,28 +131,13 @@ app.listen(port, '0.0.0.0', () => {
 ![alt text](img/10.server.js_after.png)
 
 
-### 6. In db.sql we have tables called `book` and `author` 
-but we had to change it from `book` to `books` and `author` to `authors` in the CREATE, INSERT & Reference sections of our SQL
-
-![alt text](img/11.db.sql_b4.png)
-
-![alt text](img/12.db.sql_after.png)
-
-
-### 7. We git push origin branch added as a new pull request on this github with a new branch before the next steps were taken
-
-![alt text](img/13.deploy_branch.png)
-
-
 Remember if you have the same .env variables in code and also in user data then the userdata is superior. This ensures the "local" secrets never even make it into the ZIP file or GitHub. 
 The User Data is the only source of truth in the cloud.
 Important Rule: Environment variables defined in EC2 User Data / Parameter Store / Secrets Manager take precedence over any values that might accidentally be in code or ZIP files. Never commit .env files — even by mistake.
 
 
 
-
-
-### 8. We installed ```npm install dotenv``` for our backend then we ran ```npm run build``` in backend directory
+### 6. We installed ```npm install dotenv``` for our backend then we ran ```npm run build``` in backend directory
 
 For Backend:
 ```bash
@@ -161,7 +150,7 @@ zip -r ../backend-build.zip ./*
 
 
 
-### 9. We ran ```npm run build``` for frontend for S3 in frontend directory 
+### 7. We ran ```npm run build``` for frontend for S3 in frontend directory 
 
 For Frontend:
 ```bash
@@ -179,10 +168,22 @@ The Frontend: Vite automatically looks for any file named .env and "bakes" those
 
 
 
+### 8.  We git push origin branch added as a new pull request on this github with a new branch before the next steps were taken
+#### We ignored our frontend-build.zip and backend-build.zip by creating a .gitignore in the root of our repo and finally commit on branch.
+
+![alt text](img/13a.gitignore_root_build_zips.png)
+
+![alt text](img/13b.deploy_branch.png)
+
+
+
+
+
+
 ## Deployment Methods
 
 ### Method 1
-### 10. We uploaded the Zip files only of both Frontend and backend into S3 on AWS and pasted our respective userdata using Userdata deployment method
+### 01. We uploaded the Zip files only of both Frontend and backend into S3 on AWS and pasted our respective userdata using Userdata deployment method
 
 Note our web and app tier user data is used with Amazon Linux 2023.
 
@@ -197,9 +198,10 @@ sudo dnf update -y
 sudo dnf install -y nginx unzip awscli
 
 # 2. Variables
-S3_BUCKET="paul-3tier-artifacts"
+S3_BUCKET="paul-3tier-zip"
 ZIP_FILE="frontend-build.zip"
-APP_ALB_DNS="internal-app-tier-alb-2037459119.us-east-1.elb.amazonaws.com"  # ensure you remove this internal dns and replcace with yours
+# IMPORTANT: Put your ALB DNS or App EC2 IP here
+APP_ALB_DNS="internal-app-tier-alb-2037459119.us-east-1.elb.amazonaws.com"
 
 # 3. CONFIGURE MAIN NGINX (Core Settings)
 sudo mv /etc/nginx/nginx.conf /etc/nginx/nginx.conf.bak
@@ -232,13 +234,14 @@ if [ -d "/usr/share/nginx/html/dist" ]; then
     sudo rm -rf /usr/share/nginx/html/dist
 fi
 
-# 6. THE CRITICAL FIX: Replace hardcoded Localhost with Relative Path
-sudo find /usr/share/nginx/html/ -type f -name "*.js" -exec sed -i 's|http://localhost:3000/api|/api|g' {} +
+# 6. THE CRITICAL FIX: Replace Placeholder with Relative Path
+sudo find /usr/share/nginx/html/ -type f -name "*.js" -exec sed -i 's|http://<YOUR_BACKEND_EC2_IP>:3000/api|/api|g' {} +
 
-# 7. NEW: Create Dynamic test.html with Metadata (Using Absolute Path)
-TOKEN=$(curl -X PUT "http://169.254.169.254" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
-INSTANCE_ID=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" -s http://169.254.169.254)
-AVAIL_ZONE=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" -s http://169.254.169.254)
+# 7. Metadata (Correct IMDSv2 paths)
+TOKEN=$(curl -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
+INSTANCE_ID=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/instance-id)
+AVAIL_ZONE=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/placement/availability-zone)
+PUBLIC_IP=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" "http://169.254.169.254/latest/meta-data/public-ipv4")
 
 sudo tee /usr/share/nginx/html/test.html <<EOF
 <!DOCTYPE html>
@@ -269,7 +272,7 @@ sudo chown -R nginx:nginx /usr/share/nginx/html/
 sudo find /usr/share/nginx/html/ -type d -exec chmod 755 {} +
 sudo find /usr/share/nginx/html/ -type f -exec chmod 644 {} +
 
-# 9. Create Server-Specific Configuration (With explicit /test.html block)
+# 9. Create Server-Specific Configuration (USING 'EOF' TO PREVENT BASH ERRORS)
 cat << 'EOF' | sudo tee /etc/nginx/conf.d/default.conf
 server {
     listen 80 default_server;
@@ -277,33 +280,22 @@ server {
     root /usr/share/nginx/html;
     index index.html;
 
-    # EXPLICIT RULE for test.html to prevent React Router from hijacking it
     location = /test.html {
         try_files /test.html =404;
     }
 
-    # Forward API calls to the App ALB
     location /api/ {
-        proxy_pass http://REPLACE_ME_ALB_DNS:3000;
+        # We use a placeholder here and swap it in Step 10
+        proxy_pass http://REPLACE_WITH_ALB_DNS:3000;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    # Handle React/Vite Routing
     location / {
         try_files $uri $uri/ /index.html;
     }
-
-    location /assets/ {
-        include /etc/nginx/mime.types;
-        types {
-            application/javascript js;
-            text/css css;
-        }
-    }
-
+    
     location /health {
         return 200 'OK';
         add_header Content-Type text/plain;
@@ -311,12 +303,15 @@ server {
 }
 EOF
 
-# 10. Inject ALB DNS and Start
-sudo sed -i "s|REPLACE_ME_ALB_DNS|${APP_ALB_DNS}|g" /etc/nginx/conf.d/default.conf
+# 10. Inject the Variable into the Placeholder and Start
+sudo sed -i "s|REPLACE_WITH_ALB_DNS|${APP_ALB_DNS}|g" /etc/nginx/conf.d/default.conf
+
+# 11. Final Validation and Start
 sudo nginx -t
-sudo systemctl enable nginx
-sudo systemctl restart nginx
+sudo systemctl enable --now nginx
 ```
+
+
 
 * App tier User Data
 
@@ -332,7 +327,7 @@ sudo dnf install -y nodejs npm unzip awscli mariadb105
 sudo npm install -g pm2
 
 # 3. Variables
-S3_BUCKET="paul-3tier-artifacts"
+S3_BUCKET="paul-3tier-zip"
 ZIP_FILE="backend-build.zip"
 APP_DIR="/home/ec2-user/app"
 DB_HOST="three-tier-db-books.c4j4kiq2ck9b.us-east-1.rds.amazonaws.com" # ensure you remove this RDS endpoint and replcace with yours
@@ -391,10 +386,12 @@ module.exports = db;
 EOF
 
 # 9. DYNAMIC DATABASE INITIALIZATION
-# This runs your SQL schema and seeds the data automatically
-SQL_DATA=$(cat <<EOF
--- 1. Create Tables (Plural names for tables)
-CREATE TABLE IF NOT EXISTS authors (
+# This version uses SINGULAR table names to match the Node.js code
+mysql -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASS" -e "CREATE DATABASE IF NOT EXISTS $DB_NAME;"
+
+mysql -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASS" "$DB_NAME" << 'EOF'
+-- 1. Create Tables (SINGULAR names to match BooksController.js)
+CREATE TABLE IF NOT EXISTS author (
   id int NOT NULL AUTO_INCREMENT,
   name varchar(255) NOT NULL,
   birthday date NOT NULL,
@@ -404,7 +401,7 @@ CREATE TABLE IF NOT EXISTS authors (
   PRIMARY KEY (id)
 ) ENGINE=InnoDB;
 
-CREATE TABLE IF NOT EXISTS books (
+CREATE TABLE IF NOT EXISTS book (
   id int NOT NULL AUTO_INCREMENT,
   title varchar(255) NOT NULL,
   releaseDate date NOT NULL,
@@ -412,23 +409,21 @@ CREATE TABLE IF NOT EXISTS books (
   pages int NOT NULL,
   createdAt date NOT NULL,
   updatedAt date NOT NULL,
-  authorId int DEFAULT NULL, -- KEEP THIS SINGULAR (Matches Developer Code)
+  authorId int DEFAULT NULL,
   PRIMARY KEY (id),
-  CONSTRAINT FK_author_link FOREIGN KEY (authorId) REFERENCES authors (id)
+  CONSTRAINT FK_author_link FOREIGN KEY (authorId) REFERENCES author (id)
 ) ENGINE=InnoDB;
 
--- 2. Seed Data (Plural names for tables, singular for authorId column)
-INSERT INTO authors (id, name, birthday, bio, createdAt, updatedAt) 
+-- 2. Seed Data
+INSERT INTO author (id, name, birthday, bio, createdAt, updatedAt) 
 SELECT 1, 'J.K. Rowling', '1965-07-31', 'British author of the Harry Potter series.', '2024-05-29', '2024-05-29'
-WHERE NOT EXISTS (SELECT 1 FROM authors WHERE id = 1);
+WHERE NOT EXISTS (SELECT 1 FROM author WHERE id = 1);
 
-INSERT INTO books (id, title, releaseDate, description, pages, createdAt, updatedAt, authorId)
+INSERT INTO book (id, title, releaseDate, description, pages, createdAt, updatedAt, authorId)
 SELECT 1, 'Harry Potter and the Sorcerer''s Stone', '1997-07-26', 'A young wizard discovers his heritage.', 223, '2024-05-29', '2024-05-29', 1
-WHERE NOT EXISTS (SELECT 1 FROM books WHERE id = 1);
+WHERE NOT EXISTS (SELECT 1 FROM book WHERE id = 1);
 EOF
-)
 
-mysql -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASS" -e "CREATE DATABASE IF NOT EXISTS $DB_NAME;"
 
 # 10. Start with PM2
 sudo -u ec2-user pm2 delete all || true
@@ -437,9 +432,44 @@ sudo -u ec2-user pm2 save
 sudo env PATH=$PATH:/usr/bin /usr/lib/node_modules/pm2/bin/pm2 startup systemd -u ec2-user --hp /home/ec2-user
 ```
 
+#### Results
+
+![alt text](img/14.Result_00.png)
+
+![alt text](img/14.Result_01.png)
+
+![alt text](img/15.Result_02.png)
+
+![alt text](img/16.Result_03.png)
+
+![alt text](img/17.Result_04.png)
+
+![alt text](img/18.Result_05.png)
+
+![alt text](img/19.Result_t_testpage.png)
+
+
+#### Interesting commands we used for deugging are:
+
+sudo systemctl status nginx
+
+cat /etc/nginx/conf.d/default.conf
+
+sudo tail -n 20 /var/log/cloud-init-output.log
+
+mysql -h three-tier-db-books.c4j4kiq2ck9b.us-east-1.rds.amazonaws.com -u admin -p
+
+SHOW DATABASES;
+USE react_node_app;
+SHOW TABLES;
+SELECT * FROM TABLE author;
+SELECT * FROM TABLE book;
+DROP TABLE author;
+DROP TABLE book;
+
 
 ### Method 2
-### 11. We uploaded the Zip of frontend only to S3 connected to cloudfront, and containerise backend using the containerisation deployment method.
+### 02. We uploaded the Zip of frontend only to S3 connected to cloudfront, and containerise backend using the containerisation deployment method.
 
 
 
