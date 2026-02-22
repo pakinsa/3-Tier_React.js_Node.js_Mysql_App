@@ -176,8 +176,11 @@ The Frontend: Vite automatically looks for any file named .env and "bakes" those
 ![alt text](img/13b.deploy_branch.png)
 
 
+#### Deploy to your Forked and Original Repo
+```git push origin deploy``` # deploy is the name of my branch, change yours
 
-
+#### Deploy to your forked repo only
+```git push -u origin deploy```  
 
 
 ## Deployment Methods
@@ -451,13 +454,13 @@ sudo env PATH=$PATH:/usr/bin /usr/lib/node_modules/pm2/bin/pm2 startup systemd -
 
 #### Interesting commands we used for deugging are:
 
-sudo systemctl status nginx
+```sudo systemctl status nginx```
 
-cat /etc/nginx/conf.d/default.conf
+```cat /etc/nginx/conf.d/default.conf```
 
-sudo tail -n 20 /var/log/cloud-init-output.log
+```sudo tail -n 20 /var/log/cloud-init-output.log```
 
-mysql -h three-tier-db-books.c4j4kiq2ck9b.us-east-1.rds.amazonaws.com -u admin -p
+```mysql -h three-tier-db-books.c4j4kiq2ck9b.us-east-1.rds.amazonaws.com -u admin -p```
 
 SHOW DATABASES;
 USE react_node_app;
