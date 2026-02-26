@@ -539,7 +539,7 @@ Just for the record: We changed our appuser password in db.sql from learnIT02 to
 
 ![alt text](img/20d.fargate_success.PNG) 
 
-![alt text](img/20e.fargate_success_02.PNG) 
+![alt text](img/20e.fargate_success.PNG) 
 
 
 
@@ -549,9 +549,9 @@ Just for the record: We changed our appuser password in db.sql from learnIT02 to
 
 ![alt text](img/21b.book_deleted.PNG) 
 
-![alt text](img/22c.dashboard_aft_delete.PNG) 
+![alt text](img/21c.dashboard_aft_delete.PNG) 
 
-![alt text](img/23d.json_cloudfront.PNG)
+![alt text](img/21d.json_cloudfront.PNG)
 
 
 You can check the full documentation of the serverless 3-tier containerised application in this repo: https://github.com/pakinsa/DevOps_Project/blob/main/19.Serverless%203-Tier%20Arch_Docker_Fargate_ECR_ECS_ALB_RDS_SSM_CloudFront_no%20NAT%20Gateway/Readme.md 
