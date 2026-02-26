@@ -3,7 +3,7 @@ CREATE DATABASE IF NOT EXISTS react_node_app;
 USE react_node_app;
 
 -- Optional: App user for security
-CREATE USER IF NOT EXISTS 'appuser'@'%' IDENTIFIED BY 'learnIT02#';
+CREATE USER IF NOT EXISTS 'appuser'@'%' IDENTIFIED BY 'SimplePassword123!';
 GRANT ALL PRIVILEGES ON react_node_app.* TO 'appuser'@'%';
 FLUSH PRIVILEGES;
 

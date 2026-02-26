@@ -185,7 +185,7 @@ The Frontend: Vite automatically looks for any file named .env and "bakes" those
 
 ## Deployment Methods
 
-### Method 1
+### Method 1: USER DATA Method
 ### 01. We uploaded the Zip files only of both Frontend and backend into S3 on AWS and pasted our respective userdata using Userdata deployment method
 
 Note our web and app tier user data is used with Amazon Linux 2023.
@@ -471,8 +471,87 @@ DROP TABLE author;
 DROP TABLE book;
 
 
-### Method 2
+### Method 2: Serverless Containerisation Method
 ### 02. We uploaded the Zip of frontend only to S3 connected to cloudfront, and containerise backend using the containerisation deployment method.
 
 
 
+#### 01. S3 + CloudFront
+
+* Update Frontend (in S3)
+    - Visit your cloned repo on VsCode
+    - Set API base URL to ALB DNS name in .env in frontend directory (e.g., https://my-alb-....elb.amazonaws.com).
+    - Generate backend-build.zip:
+        * cd frontend/ on bash terminal
+        * npm install              # Ensure all React dependencies are there
+        * npm run build            # This creates the 'dist' folder (The Actual Website)
+        * cd dist/
+        * upload ALL to S3 bucket via console or aws s3 copy command: aws s3 sync . s3://paul-3tier-frontend --delete
+     
+
+    - Configure CloudFront to to see files in S3
+        * Create distribution
+        * Add first origin: s3
+        * Create and merge second origin & behaviour for alb.
+
+![alt text](img/20a.Vite_url_env.PNG)
+
+
+
+
+
+#### 02. ALB + ECR + ECS 
+
+Just for the record: We changed our appuser password in db.sql from learnIT02 to SimplePassword123! 
+
+* Create Load Balancer.
+    - Scheme: Internet-facing.
+    - Subnets: Select your 2 Public Subnets.
+    - Security Group: Use your ALB-SG (Allow Port 80).
+    - Listeners: Port 80 -> Forward to the Target Group you just created.
+
+
+* Service: Amazon ECR.
+    - Action: Create Repository.
+    - Name: your-backend-repo-name (Match your script exactly).
+    - Why: Your script needs a destination for the docker push.
+    - Copy and paste your ECR name into the push_to_ecr.sh script below
+
+
+* Service: Amazon ECS.
+
+    -   Create the ECS Task Definition
+    -   Create the ECS Service
+
+
+* Generate backend-build.zip:
+    -  Visit your cloned repo on VSCODE
+    -  cd backend/
+    -  npm install dotenv mysql2  // Install packages to handle .env file loading and RDS connection; task definition will handle production environment variables as task definition env variables superseeds
+       // DO NOT run 'npm run build' here (Standard Node.js backends don't need a build step)
+    -  rm -rf node_modules       # Remove this to make the ZIP small (User Data installs it for you)
+    -  zip -r ../backend-build.zip ./*
+
+
+![alt text](img/20b.nano_push_to_ecr.PNG) 
+
+![alt text](img/20c.run_push_to_ecr.PNG) 
+
+![alt text](img/20d.fargate_success.PNG) 
+
+![alt text](img/20e.fargate_success_02.PNG) 
+
+
+
+#### Result
+
+![alt text](img/21a.dashboard_fargat.PNG) 
+
+![alt text](img/21b.book_deleted.PNG) 
+
+![alt text](img/22c.dashboard_aft_delete.PNG) 
+
+![alt text](img/23d.json_cloudfront.PNG)
+
+
+You can check the full documentation of the serverless 3-tier containerised application in this repo: https://github.com/pakinsa/DevOps_Project/blob/main/19.Serverless%203-Tier%20Arch_Docker_Fargate_ECR_ECS_ALB_RDS_SSM_CloudFront_no%20NAT%20Gateway/Readme.md 
