@@ -16,7 +16,6 @@ import {
 import { Bar, Pie } from 'react-chartjs-2';
 import { useEffect, useState } from 'react';
 import { Book } from './models/Books';
-import { color } from 'chart.js/helpers';
 // import { Author } from './models/Author';
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -39,8 +38,7 @@ const barChartOptions = {
     },
     title: {
       display: true,
-      text: 'NEW Book Length Distribution',
-      color: 'blue',
+      text: 'NEW Book Length Distribution - CICD TEST SUCCESS'
     },
   },
   scales: {
