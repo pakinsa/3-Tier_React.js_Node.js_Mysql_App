@@ -1,3 +1,2 @@
--- Existing tables
 CREATE TABLE IF NOT EXISTS author (id int NOT NULL AUTO_INCREMENT, name varchar(255) NOT NULL, birthday date NOT NULL, bio text NOT NULL, createdAt date NOT NULL, updatedAt date NOT NULL, PRIMARY KEY (id));
 CREATE TABLE IF NOT EXISTS book (id int NOT NULL AUTO_INCREMENT, title varchar(255) NOT NULL, releaseDate date NOT NULL, description text NOT NULL, pages int NOT NULL, createdAt date NOT NULL, updatedAt date NOT NULL, authorId int DEFAULT NULL, PRIMARY KEY (id), CONSTRAINT FK_author_link FOREIGN KEY (authorId) REFERENCES author (id));
