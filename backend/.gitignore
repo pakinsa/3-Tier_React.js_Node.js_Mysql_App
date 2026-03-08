@@ -11,3 +11,4 @@ dist/*
 # Ignore the build zip files
 frontend-build.zip
 backend-build.zip
+/generated/prisma
