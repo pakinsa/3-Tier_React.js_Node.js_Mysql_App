@@ -2,11 +2,15 @@ name: Database Migration
 on:
   push:
     branches: [main]
-    paths: ['backend/prisma/**'] # Trigger when prisma files change
+    paths:
+      - 'backend/prisma/**'
+      - '!frontend/**'
+      - '!.github/**'
 
 jobs:
   migrate:
-    runs-on: self-hosted
+    # Changed from self-hosted to GitHub cloud runner
+    runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: backend
@@ -20,9 +24,7 @@ jobs:
         run: npm ci
       - name: Deploy to RDS
         run: |
-          # Tells RDS that the '0_init' tables already exist
           npx prisma migrate resolve --applied 0_init || true
-          # Applies the 'add_rating' SQL file
           npx prisma migrate deploy
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
