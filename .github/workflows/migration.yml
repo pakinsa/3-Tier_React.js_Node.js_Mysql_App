@@ -1,8 +1,13 @@
 name: Database Migration
+
 on:
   push:
     branches: [main]
-    paths: ['backend/prisma/**']
+    # Only trigger if database-related files change
+    paths:
+      - 'backend/prisma/**'
+      - '!frontend/**'
+      - '!.github/**'
 
 jobs:
   migrate:
@@ -10,28 +15,39 @@ jobs:
     defaults:
       run:
         working-directory: backend
+
     steps:
-      - uses: actions/checkout@v4
-      - name: Setup Node
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-      
+
       - name: Install Dependencies
         run: npm ci
 
-      - name: Create SSH Tunnel to Private RDS
+      - name: Tunnel and Migrate
+        # We combine these into one block so GitHub doesn't kill the tunnel before Prisma runs
         run: |
+          # 1. Setup the Private SSH Key
           echo "${{ secrets.EC2_SSH_KEY }}" > private_key.pem
           chmod 600 private_key.pem
-          # Opens the tunnel: maps local 3307 to RDS 3306 via EC2 Jump Server
-          ssh -i private_key.pem -o StrictHostKeyChecking=no -f -N -L 3307:${{ secrets.RDS_ENDPOINT }}:3306 ec2-user@${{ secrets.EC2_PUBLIC_IP }}
-          sleep 5 # Wait for tunnel to stabilize
 
-      - name: Deploy to RDS
-        run: |
-          # Use 'migrate deploy' to avoid the Shadow Database error
+          # 2. Start the SSH Tunnel in the background
+          # Maps Runner's 127.0.0.1:3307 -> RDS 3306 via the Jump Server
+          ssh -i private_key.pem -o StrictHostKeyChecking=no -f -N -L 3307:three-tier-db-books.c4j4kiq2ck9b.us-east-1.rds.amazonaws.com:3306 ec2-user@${{ secrets.EC2_PUBLIC_IP }}
+          
+          # 3. Wait for the bridge to stabilize
+          sleep 5
+
+          # 4. Verify the connection is alive
+          nc -zv 127.0.0.1 3307
+
+          # 5. Execute Prisma Migrations immediately while the tunnel is open
           npx prisma migrate resolve --applied 0_init || true
           npx prisma migrate deploy
         env:
+          # This must be the localhost version: mysql://user:pass@127.0.0.1:3307/db
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
