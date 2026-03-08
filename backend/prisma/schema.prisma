@@ -26,7 +26,7 @@ model book {
   createdAt   DateTime @db.Date
   updatedAt   DateTime @db.Date
   authorId    Int?
-  ratings      Int?     // <--- ENSURE THIS IS HERE
+  rating      Int?     // <--- ENSURE THIS IS HERE
   author      author?  @relation(fields: [authorId], references: [id], map: "FK_author_link")
 
   @@index([authorId], map: "FK_author_id_idx")
