@@ -2,14 +2,10 @@ name: Database Migration
 on:
   push:
     branches: [main]
-    paths:
-      - 'backend/prisma/**'
-      - '!frontend/**'
-      - '!.github/**'
+    paths: ['backend/prisma/**']
 
 jobs:
   migrate:
-    # Changed from self-hosted to GitHub cloud runner
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -20,10 +16,21 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Install Deps
+      
+      - name: Install Dependencies
         run: npm ci
+
+      - name: Create SSH Tunnel to Private RDS
+        run: |
+          echo "${{ secrets.EC2_SSH_KEY }}" > private_key.pem
+          chmod 600 private_key.pem
+          # Opens the tunnel: maps local 3307 to RDS 3306 via EC2 Jump Server
+          ssh -i private_key.pem -o StrictHostKeyChecking=no -f -N -L 3307:${{ secrets.RDS_ENDPOINT }}:3306 ec2-user@${{ secrets.EC2_PUBLIC_IP }}
+          sleep 5 # Wait for tunnel to stabilize
+
       - name: Deploy to RDS
         run: |
+          # Use 'migrate deploy' to avoid the Shadow Database error
           npx prisma migrate resolve --applied 0_init || true
           npx prisma migrate deploy
         env:
