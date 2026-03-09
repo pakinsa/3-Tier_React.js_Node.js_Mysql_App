@@ -3,12 +3,11 @@ name: Database Migration
 on:
   push:
     branches: [main]
-    # Only trigger if database-related files change
     paths:
-      - 'backend/prisma/**'
-      - '!frontend/**'
-      - '!.github/**'
-      - '!.github/workflows/frontend-deploy.yml' # Ensure frontend deploy changes don't trigger migration
+      - 'backend/**'           # Trigger if ANY backend file changes
+      - 'prisma/**'            # Trigger if prisma folder is at root
+      - '.github/workflows/database-migration.yml' # Trigger if you edit this file
+  workflow_dispatch:           # Allows you to click "Run Workflow" manually
 
 jobs:
   migrate:
