@@ -8,6 +8,7 @@ on:
       - 'backend/prisma/**'
       - '!frontend/**'
       - '!.github/**'
+      - '!.github/workflows/frontend-deploy.yml' # Ensure frontend deploy changes don't trigger migration
 
 jobs:
   migrate:

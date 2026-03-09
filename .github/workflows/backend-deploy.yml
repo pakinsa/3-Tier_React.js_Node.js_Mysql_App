@@ -1,0 +1,64 @@
+name: Backend Deployment
+
+on:
+  workflow_run:
+    workflows: ["Database Migration"]
+    types: [completed]
+  # Optional: Allows you to trigger this manually from the GitHub UI
+  workflow_dispatch: 
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    # Only run if the Database Migration was SUCCESSFUL
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: us-east-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, Tag, and Push to ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: 3tier-serverless
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ./backend
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+      - name: Render New Task Definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: backend-task-def.json
+          container-name: my-backend-container                # Ensure container name correct just as with the console  
+          image: ${{ steps.build-image.outputs.image }}
+          environment-variables: |
+            DB_HOST=${{ secrets.DB_HOST }}
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            DB_USER=${{ secrets.DB_USER }}
+            DB_NAME=${{ secrets.DB_NAME }}
+
+      - name: Deploy to Amazon ECS (Fargate)
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: Serverless_task_def-service-rq42pfwa                    # Ensure service name is correct just as with the console  
+          cluster: 3tier_cluster                                           # Ensure cluster name is correct just as with the console
+          wait-for-service-stability: true

@@ -1,0 +1,45 @@
+{
+    "containerDefinitions": [
+        {
+            "name": "my-backend-container",
+            "image": "PLACEHOLDER",
+            "cpu": 0,
+            "portMappings": [
+                {
+                    "containerPort": 3000,
+                    "hostPort": 3000,
+                    "protocol": "tcp",
+                    "appProtocol": "http"
+                }
+            ],
+            "essential": true,
+            "environment": [
+                { "name": "DB_NAME", "value": "DB_NAME_PLACEHOLDER" },
+                { "name": "PORT", "value": "3000" },
+                { "name": "DB_HOST", "value": "DB_HOST_PLACEHOLDER" },
+                { "name": "DB_USER", "value": "DB_USER_PLACEHOLDER" },
+                { "name": "DB_PASSWORD", "value": "DB_PASSWORD_PLACEHOLDER" }
+            ],
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/Serverless_task_def",
+                    "awslogs-create-group": "true",
+                    "awslogs-region": "us-east-1",
+                    "awslogs-stream-prefix": "ecs"
+                }
+            }
+        }
+    ],
+    "family": "Serverless_task_def",
+    "executionRoleArn": "arn:aws:iam::465828358642:role/ecsTaskExecutionRole",
+    "taskRoleArn": "arn:aws:iam::465828358642:role/ecsTaskExecutionRole",
+    "networkMode": "awsvpc",
+    "requiresCompatibilities": [ "FARGATE" ],
+    "cpu": "512",
+    "memory": "1024",
+    "runtimePlatform": {
+        "cpuArchitecture": "X86_64",
+        "operatingSystemFamily": "LINUX"
+    }
+}
