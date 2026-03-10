@@ -38,7 +38,7 @@ const barChartOptions = {
     },
     title: {
       display: true,
-      text: 'NEW Book Length Distribution - CICD TEST SUCCESS'
+      text: 'Book Length Distribution'
     },
   },
   scales: {

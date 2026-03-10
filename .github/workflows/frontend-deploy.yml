@@ -1,8 +1,12 @@
 name: Frontend Deployment
-
 on:
   push:
     branches: [ main ]
+    paths:
+      - 'frontend/**'
+      - '!backend/**'
+      - '!.github/**'      # Explicitly ignore workflow changes
+      - '!.github/workflows/migration.yml'
 
 permissions:
   id-token: write
