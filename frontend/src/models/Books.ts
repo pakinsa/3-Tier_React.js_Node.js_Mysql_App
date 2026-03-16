@@ -4,6 +4,7 @@ export interface Book {
     releaseDate: string;
     description: string;
     pages: number;
+    rating?: string; // Added rating
     createdAt: string;
     updatedAt: string;
     authorId: number;
@@ -18,6 +19,7 @@ export interface BookDTO {
     releaseDate: string;
     description: string;
     pages: number;
+    rating?: string; // Added rating
     createdAt: string;
     updatedAt: string;
     author: string
@@ -29,6 +31,7 @@ export interface BookFormDTO {
     releaseDate: string;
     description: string;
     pages: number;
+    rating?: string; // Added rating
     createdAt: string;
     updatedAt: string;
     author?: number

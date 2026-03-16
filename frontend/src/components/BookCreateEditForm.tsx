@@ -42,6 +42,12 @@ export const BookCreateEditForm = ({ initialValues, authors, onFormInstanceReady
                options={renderOptions()}
             />
          </Form.Item>
+         <Form.Item
+            name="rating"
+            label="Rating"
+            rules={[{ required: false, message: 'Please enter a rating' }]}>
+            <Input placeholder="Enter rating (e.g. 5 stars)" />
+         </Form.Item>
       </Form>
    )
 }
