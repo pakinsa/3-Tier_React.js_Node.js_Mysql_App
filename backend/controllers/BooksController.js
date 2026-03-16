@@ -38,10 +38,11 @@ BooksController.prototype.create = async (req, res) => {
          releaseDate,
          pages,
          author: authorId,
+         rating // 1. Pull rating from the request body
       } = req.body;
 
-      db.query('INSERT INTO book (title, releaseDate, description, pages, authorId, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?)', [
-         title, new Date(releaseDate), description, pages, authorId, new Date(), new Date()], (err) => {
+      db.query('INSERT INTO book (title, releaseDate, description, pages, authorId, rating, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [
+         title, new Date(releaseDate), description, pages, authorId, rating, new Date(), new Date()], (err) => {
             if (err) {
                throw new Error("Error executing query.", err);
             }
@@ -75,10 +76,11 @@ BooksController.prototype.update = async (req, res) => {
          releaseDate,
          pages,
          author: authorId,
+         rating // 2. Pull rating from the request body
       } = req.body;
 
-      db.query('UPDATE book SET title = ?, releaseDate = ?, description = ?, pages = ?, authorId = ?, updatedAt = CURRENT_TIMESTAMP WHERE id = ?', [
-         title, new Date(releaseDate), description, pages, authorId, bookId], (err) => {
+      db.query('UPDATE book SET title = ?, releaseDate = ?, description = ?, pages = ?, authorId = ?, rating = ?, updatedAt = CURRENT_TIMESTAMP WHERE id = ?', [
+         title, new Date(releaseDate), description, pages, authorId, rating, bookId], (err) => {
             if (err) {
                console.log(err);
                throw new Error("Error executing query.");
