@@ -76,7 +76,7 @@ BooksController.prototype.update = async (req, res) => {
          releaseDate,
          pages,
          author: authorId,
-         rating // 2. Pull rating from the request body
+         rating // 2. Pull rating from the request body for book
       } = req.body;
 
       db.query('UPDATE book SET title = ?, releaseDate = ?, description = ?, pages = ?, authorId = ?, rating = ?, updatedAt = CURRENT_TIMESTAMP WHERE id = ?', [
