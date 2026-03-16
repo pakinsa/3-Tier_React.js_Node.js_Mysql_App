@@ -10,6 +10,7 @@ type Props = {
 enum ValueMappings {
    "id" = "ID",
    "title" = "TITLE",
+   "rating" = "RATING", // <--- ADD THIS LINE: This maps the DB column name to the UI Label
    "releaseDate" = "RELEASE DATE",
    "description" = "BOOK DESCRIPTION",
    "pages" = "TOTAL PAGES",
