@@ -2,7 +2,7 @@ const db = require('../configs/db');
 
 function BooksController() { }
 
-const getQuery = `SELECT b.id as id, b.title as title, b.releaseDate as releaseDate, b.description as description, b.pages as pages,
+const getQuery = `SELECT b.id as id, b.title as title, b.releaseDate as releaseDate, b.description as description, b.pages as pages, b.rating as rating,
  b.createdAt as createdAt, b.updatedAt as updatedAt, a.id as authorId, a.name as name, a.birthday as birthday, a.bio as bio FROM book b INNER JOIN author a on b.authorId = a.id`;
 
 BooksController.prototype.get = async (req, res) => {
@@ -18,7 +18,7 @@ BooksController.prototype.get = async (req, res) => {
                releaseDate: new Date(book.releaseDate).toLocaleDateString("en-CA"),
                createdAt: new Date(book.createdAt).toLocaleDateString("en-CA"),
                updatedAt: new Date(book.updatedAt).toLocaleDateString("en-CA"),
-               rating: book.rating // 3. Include rating in the response
+               rating: book.rating // 3. Include rating in the response. We explicitly include rating here so the frontend can display it
             })),
          });
       });
