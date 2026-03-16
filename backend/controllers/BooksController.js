@@ -18,6 +18,7 @@ BooksController.prototype.get = async (req, res) => {
                releaseDate: new Date(book.releaseDate).toLocaleDateString("en-CA"),
                createdAt: new Date(book.createdAt).toLocaleDateString("en-CA"),
                updatedAt: new Date(book.updatedAt).toLocaleDateString("en-CA"),
+               rating: book.rating // 3. Include rating in the response
             })),
          });
       });
