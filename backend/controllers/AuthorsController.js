@@ -89,32 +89,32 @@ AuthorsController.prototype.update = async (req, res) => {
 };
 
 AuthorsController.prototype.delete = async (req, res) => {
-   try {
-      const authorId = req.params.id;
+   const authorId = req.params.id;
 
-      db.query('DELETE FROM author WHERE id = ?', [authorId], (err, result) => {
+   db.query('DELETE FROM author WHERE id = ?', [authorId], (err, result) => {
+      if (err) {
+         // 1. Log the REAL error for you to see in CloudWatch (e.g., Foreign Key constraint)
+         console.error("DELETE FAILED:", err);
+
+         // 2. Return a response to the USER instead of crashing the server
+         return res.status(500).json({
+            message: "Cannot delete author. Please ensure all books by this author are deleted first.",
+            error: err.code // Optional: send 'ER_ROW_IS_REFERENCED_2' so the frontend knows why
+         });
+      }
+
+      // If delete succeeds, refresh the list
+      db.query(getQuery, (err, authors) => {
          if (err) {
-            throw new Error("Error executing query.");
+            return res.status(500).json({ message: "Error refreshing author list." });
          }
 
-         db.query(getQuery, (err, authors) => {
-            if (err) {
-               throw new Error("Error executing query.");
-            }
-
-            return res.status(200).json({
-               message: `Author deleted successfully!`,
-               authors: authors,
-            });
+         return res.status(200).json({
+            message: `Author deleted successfully!`,
+            authors: authors,
          });
       });
-   } catch (error) {
-      console.error(error);
-      res.status(500).json({
-         message:
-            "Something unexpected has happened. Please try again later.",
-      });
-   }
+   });
 };
 
 module.exports = new AuthorsController();
