@@ -5,28 +5,24 @@ function AuthorsController() { }
 const getQuery = 'SELECT * FROM author';
 
 AuthorsController.prototype.get = async (req, res) => {
-   try {
-      db.query(getQuery, (err, authors) => {
-         if (err) {
-            throw new Error("Error executing query.");
-         }
+   // Remove the try/catch here if you aren't using await, 
+   // or just ensure you don't THROW inside the callback.
+   db.query(getQuery, (err, authors) => {
+      if (err) {
+         console.error("Database Error:", err); // Log the ACTUAL error to CloudWatch
+         return res.status(500).json({ message: "Error executing query." }); 
+         // ^ Use 'return res' instead of 'throw'
+      }
 
-         res.status(200).json({
-            authors: authors.map(author => ({
-               ...author,
-               birthday: new Date(author.birthday).toLocaleDateString("en-CA"),
-               createdAt: new Date(author.createdAt).toLocaleDateString("en-CA"),
-               updatedAt: new Date(author.updatedAt).toLocaleDateString("en-CA"),
-            })),
-         });
+      res.status(200).json({
+         authors: authors.map(author => ({
+            ...author,
+            birthday: new Date(author.birthday).toLocaleDateString("en-CA"),
+            createdAt: new Date(author.createdAt).toLocaleDateString("en-CA"),
+            updatedAt: new Date(author.updatedAt).toLocaleDateString("en-CA"),
+         })),
       });
-   } catch (error) {
-      console.error(error);
-      res.status(500).json({
-         message:
-            "Something unexpected has happened. Please try again later.",
-      });
-   }
+   });
 };
 
 AuthorsController.prototype.create = async (req, res) => {
