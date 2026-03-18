@@ -98,7 +98,7 @@ AuthorsController.prototype.delete = async (req, res) => {
 
          // 2. Return a response to the USER instead of crashing the server
          return res.status(500).json({
-            message: "Cannot delete author. Please ensure all books by this author are deleted first.",
+            message: "Please ensure all books by this author are deleted first.",
             error: err.code // Optional: send 'ER_ROW_IS_REFERENCED_2' so the frontend knows why
          });
       }
