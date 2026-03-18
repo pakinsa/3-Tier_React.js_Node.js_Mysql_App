@@ -38,7 +38,7 @@ const barChartOptions = {
     },
     title: {
       display: true,
-      text: 'Book Length Distribution'
+      text: 'Book Distribution Titles'
     },
   },
   scales: {
